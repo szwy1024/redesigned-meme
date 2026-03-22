@@ -6,6 +6,10 @@ __pycache__/
 dist/
 build/
 
+# Data (large datasets - do not commit)
+backend/data/
+backend/checkpoints/
+
 # Node
 node_modules/
 *.log

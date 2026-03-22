@@ -6,7 +6,9 @@ Social Media Sentiment Analysis System with Deep Learning
 
 ## 项目简介
 
-本项目是一个基于深度学习的社交媒体文本情感分析系统，支持对包含表情符号、话题标签、网络用语等噪声的短文本进行情感分类（正面/负面/中性）。
+本项目是一个基于深度学习的社交媒体文本情感分析系统，支持对包含表情符号、话题标签、网络用语等噪声的短文本进行情感分类（正面/负面）。
+
+> **注意**：本系统默认使用二分类（正面/负面），配套微博情感数据集进行训练。
 
 ### 核心特性
 
@@ -41,7 +43,7 @@ Social Media Sentiment Analysis System with Deep Learning
 │  │ Channel A           │    │ Channel B                  │  │
 │  │ Text Encoder        │    │ Social Feature Extractor   │  │
 │  │ (RoBERTa-wwm-ext)  │    │ (MLP: Linear→ReLU→LayerNorm) │
-│  │ [CLS] vector       │    │ 10-dim → 64-dim          │  │
+│  │ [CLS] vector       │    │ 10-dim → 128-dim         │  │
 │  │ 768-dim            │    │                            │  │
 │  └─────────┬──────────┘    └──────────┬─────────────────┘  │
 │            │                          │                     │
@@ -51,7 +53,7 @@ Social Media Sentiment Analysis System with Deep Learning
 │            │ Fusion &      │                               │
 │            │ Classification │                               │
 │            │ Concat → MLP  │                               │
-│            │ → 3 logits    │                               │
+│            │ → 2 logits    │                               │
 │            └────────────────┘                               │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -71,7 +73,7 @@ Social Media Sentiment Analysis System with Deep Learning
 MLP 网络，用于将社交信号转为稠密向量：
 
 ```
-Input (10-dim) → Linear(10, 64) → ReLU → LayerNorm(64) → Output (64-dim)
+Input (10-dim) → Linear(10, 128) → ReLU → LayerNorm(128) → Output (128-dim)
 ```
 
 输入特征包括：
@@ -91,8 +93,8 @@ Input (10-dim) → Linear(10, 64) → ReLU → LayerNorm(64) → Output (64-dim)
 ### Fusion & Classification Head
 
 ```
-[CLS](768) + Social(64) = 832-dim
-    → Linear(832, 128) → ReLU → Dropout(0.1) → Linear(128, 3) → logits
+[CLS](768) + Social(128) = 896-dim
+    → Linear(896, 128) → ReLU → Dropout(0.1) → Linear(128, 2) → logits
 ```
 
 ## 目录结构
@@ -104,115 +106,137 @@ deepLeran/
 │   │   ├── api/
 │   │   │   └── routes.py          # API 路由与 Pydantic 模型
 │   │   ├── core/
-│   │   │   └── trainer.py          # 训练循环与评估指标
+│   │   │   └── trainer.py        # 训练循环与评估指标
 │   │   ├── dataset/
-│   │   │   ├── dataset.py          # PyTorch Dataset 类
-│   │   │   └── text_cleaner.py     # 文本清洗工具
+│   │   │   ├── dataset.py         # PyTorch Dataset 类
+│   │   │   └── text_cleaner.py    # 文本清洗工具
 │   │   ├── models/
-│   │   │   └── model.py            # 双通道融合模型
-│   │   └── main.py                 # FastAPI 入口
-│   ├── checkpoints/                 # 模型权重保存目录
+│   │   │   └── model.py           # 双通道融合模型
+│   │   └── main.py                # FastAPI 入口
+│   ├── checkpoints/               # 模型权重保存目录
 │   ├── data/
-│   │   ├── raw/                     # 原始数据
-│   │   └── processed/               # 处理后数据
+│   │   ├── raw/                   # 原始数据
+│   │   └── processed/             # 处理后数据 (train/val/test)
 │   ├── scripts/
-│   │   ├── test_cleaner.py          # TextCleaner 测试
-│   │   └── test_dataset.py           # Dataset 测试
-│   ├── pyproject.toml               # Python 依赖
-│   └── uv.lock                      # 依赖锁定文件
+│   │   ├── prepare_data.py        # 数据预处理脚本
+│   │   ├── train.py               # 模型训练脚本
+│   │   ├── test_cleaner.py        # TextCleaner 测试
+│   │   └── test_dataset.py        # Dataset 测试
+│   ├── pyproject.toml             # Python 依赖
+│   └── uv.lock                    # 依赖锁定文件
 ├── frontend/
 │   ├── src/
-│   │   ├── App.vue                  # 主界面组件
+│   │   ├── App.vue                # 主界面组件
 │   │   ├── api/
-│   │   │   └── sentiment.ts          # API 调用模块
-│   │   ├── style.css                # 全局样式
-│   │   └── main.ts                  # Vue 入口
+│   │   │   └── sentiment.ts        # API 调用模块
+│   │   ├── style.css              # 全局样式
+│   │   └── main.ts                # Vue 入口
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.ts
-├── CLAUDE.md                        # 开发指南
+├── CLAUDE.md                      # 开发指南
 └── README.md
 ```
 
-## 环境配置
+## 从 GitHub 克隆后的完整配置流程
 
-### 前置要求
-
-- Python 3.10+
-- Node.js 18+
-- npm 或 yarn
-- uv (Python 包管理器)
-
-### 后端配置
+### 1. 克隆项目
 
 ```bash
-# 进入后端目录
+git clone <repository-url>
+cd deepLeran
+```
+
+### 2. 配置后端环境
+
+```bash
 cd backend
 
-# 使用 uv 同步依赖
+# 使用 uv 安装依赖
 uv sync
-
-# 或手动安装
-uv add fastapi uvicorn torch transformers datasets scikit-learn pandas numpy tqdm rich pydantic python-multipart
 ```
 
-### 前端配置
+### 3. 准备数据集
+
+本项目使用微博情感分析数据集（二分类：正面/负面）。
+
+**方式一**：使用已有的数据集文件
+
+将你的数据集 CSV 文件放入 `backend/data/raw/` 目录，文件格式应为：
+```csv
+label,review
+1,这是一条正面评论
+0,这是一条负面评论
+```
+
+**方式二**：如使用 weibo_senti_100k.csv，运行数据预处理：
 
 ```bash
-# 进入前端目录
-cd frontend
-
-# 安装依赖
-npm install
+# 确保数据文件在 backend/data/raw/weibo_senti_100k.csv
+uv run python scripts/prepare_data.py
 ```
 
-## 运行项目
+输出结果：
+```
+Loaded 119,988 rows
+Train: 95,990 rows
+Val:   11,999 rows
+Test:  11,999 rows
+Saved to backend/data/processed/
+```
 
-### 1. 启动后端
+### 4. 训练模型
 
 ```bash
 cd backend
 
-# 开发模式（热重载）
+# 训练模型（约需 15-30 分钟，视 GPU 性能）
+uv run python scripts/train.py
+```
+
+**训练配置**（可在 `scripts/train.py` 中修改）：
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| epochs | 5 | 训练轮次 |
+| batch_size | 32 | 批大小 |
+| learning_rate | 2e-5 | 学习率 |
+| max_length | 128 | 文本最大长度 |
+
+训练过程中会打印每个 epoch 的：
+- Train Loss
+- Val Accuracy
+- Val F1 Score (macro/weighted)
+- Confusion Matrix
+
+训练完成后，最佳模型自动保存到 `backend/checkpoints/best_model.pt`
+
+### 5. 启动后端服务
+
+```bash
+cd backend
+
+# 启动 API 服务
 uv run uvicorn app.main:app --reload --port 8000
-
-# 或直接运行
-uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-后端启动后：
-- API 文档：http://localhost:8000/docs
-- 健康检查：http://localhost:8000/health
+验证服务运行：
+```bash
+curl http://localhost:8000/health
+```
 
-### 2. 启动前端
+### 6. 启动前端
 
 ```bash
 cd frontend
 
-# 开发模式
+# 安装依赖（如未安装）
+npm install
+
+# 启动开发服务器
 npm run dev
-
-# 构建生产版本
-npm run build
 ```
 
-前端启动后访问：http://localhost:5173
-
-### 3. 训练模型（如有数据集）
-
-```bash
-cd backend
-
-# 查看训练脚本用法
-uv run python scripts/train.py --help
-
-# 基本训练命令
-uv run python scripts/train.py \
-    --data_path data/processed/train.csv \
-    --epochs 10 \
-    --batch_size 32 \
-    --learning_rate 2e-5
-```
+前端访问地址：http://localhost:5173
 
 ## API 使用
 
@@ -232,8 +256,7 @@ curl -X POST http://localhost:8000/api/predict \
   "confidence": 0.853,
   "confidence_per_class": {
     "positive": 0.853,
-    "negative": 0.102,
-    "neutral": 0.045
+    "negative": 0.147
   },
   "social_features": {
     "emoji_count": 1,
@@ -288,7 +311,7 @@ curl http://localhost:8000/api/labels
 
 ### 代码规范
 
-- **Python**: 严格使用 Type Hints，运行 `uvx pyright` 确保无类型错误
+- **Python**: 严格使用 Type Hints，运行 `uvx pyright app/` 确保无类型错误
 - **前端**: Vue 3 Composition API + `<script setup>` 语法
 - **提交规范**: 遵循 Conventional Commits (feat/fix/docs/style/refactor/test/chore)
 
@@ -299,10 +322,7 @@ curl http://localhost:8000/api/labels
 cd backend
 uvx pyright app/
 
-# Python 单元测试
-uv run pytest tests/
-
-# 前端类型检查
+# 前端构建检查
 cd frontend
 npm run build
 ```
@@ -311,15 +331,22 @@ npm run build
 
 ### Q: 启动时报 `size mismatch` 错误？
 
-A: 检查 `app/main.py` 中的 `ModelConfig` 参数是否与训练时一致，特别是 `fusion_hidden_dim`。
+A: 检查 `app/main.py` 中的 `ModelConfig` 参数是否与训练时一致，特别是 `fusion_hidden_dim`、`num_labels`。
 
 ### Q: HuggingFace 模型下载失败？
 
-A: 设置 HF_TOKEN 环境变量或配置镜像源。
+A: 设置 HF_TOKEN 环境变量或配置镜像源：
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
+```
 
-### Q: macOS 上 PyTorch 使用 MPS 加速？
+### Q: 训练太慢？
 
-A: 模型会自动检测并使用 MPS（需要 PyTorch 2.0+）。
+A: 确保使用 GPU 加速。macOS M1/M2/M3 会自动使用 MPS，NVIDIA GPU 会使用 CUDA。
+
+### Q: 如何使用自己的数据集？
+
+A: 确保 CSV 文件格式为 `label,review`，label 为 0（负面）或 1（正面），然后运行 `prepare_data.py`。
 
 ## License
 
