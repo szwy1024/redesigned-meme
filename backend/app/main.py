@@ -67,15 +67,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         "hfl/chinese-roberta-wwm-ext"
     )
 
-    # Initialize model
+    # Initialize model (must match training config)
     model_config = ModelConfig(
         pretrained_model_name="hfl/chinese-roberta-wwm-ext",
         social_feature_dim=10,
         social_hidden_dim=32,
-        fusion_hidden_dim=128,
-        num_labels=3,
+        fusion_hidden_dim=128,  # Match train.py
+        num_labels=2,  # Binary classification (positive/negative)
         dropout_prob=0.1,
-        freeze_text_encoder=True,
+        freeze_text_encoder=False,  # Match train.py
     )
     _model = SocialSentimentFusionModel(model_config)
 
@@ -128,12 +128,7 @@ def create_app() -> FastAPI:
     # CORS Configuration
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:3000",
-        ],
+        allow_origin_regex=r"https?://(localhost|127\.0\.0\.1):\d+",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

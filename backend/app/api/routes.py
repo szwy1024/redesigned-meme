@@ -20,11 +20,10 @@ from app.main import get_model, get_tokenizer
 
 
 class SentimentLabel(str, Enum):
-    """Sentiment classification labels."""
+    """Sentiment classification labels (binary: positive/negative)."""
 
     POSITIVE = "positive"
     NEGATIVE = "negative"
-    NEUTRAL = "neutral"
 
 
 class AnalyzeRequest(BaseModel):
@@ -89,7 +88,6 @@ class AnalyzeResponse(BaseModel):
 _LABEL_MAP: dict[int, SentimentLabel] = {
     0: SentimentLabel.POSITIVE,
     1: SentimentLabel.NEGATIVE,
-    2: SentimentLabel.NEUTRAL,
 }
 
 
@@ -274,7 +272,6 @@ async def analyze_text(request: AnalyzeRequest) -> AnalyzeResponse:
     confidence_per_class = {
         "positive": float(probs[0]),
         "negative": float(probs[1]),
-        "neutral": float(probs[2]),
     }
 
     # Build response
