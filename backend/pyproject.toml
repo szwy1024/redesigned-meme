@@ -17,6 +17,8 @@ dependencies = [
     "rich>=13.9.0",
     "pydantic>=2.10.0",
     "python-multipart>=0.0.20",
+    "netron>=8.9.6",
+    "onnxscript>=0.6.2",
 ]
 
 [project.optional-dependencies]

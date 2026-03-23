@@ -97,6 +97,47 @@ Input (10-dim) → Linear(10, 128) → ReLU → LayerNorm(128) → Output (128-d
     → Linear(896, 128) → ReLU → Dropout(0.1) → Linear(128, 2) → logits
 ```
 
+## 模型可视化
+
+### 导出计算图
+
+本项目支持导出神经网络计算图用于可视化分析。
+
+```bash
+cd backend
+
+# 安装依赖（自动安装 netron 和 onnxscript）
+uv sync
+
+# 导出模型计算图到 ONNX 格式
+uv run python scripts/export_model_graph.py
+```
+
+导出后模型文件位于 `backend/model_graph.onnx`（已移动至项目根目录 `model_graph.onnx`）。
+
+### 使用 Netron 可视化
+
+**方式一：在线查看**
+1. 访问 https://netron.app
+2. 点击 "Open Model" 上传 `model_graph.onnx` 文件
+
+**方式二：本地启动 Netron 服务器**
+```bash
+# 在项目根目录运行
+netron model_graph.onnx
+```
+
+### 计算图说明
+
+导出的 ONNX 模型包含以下输入输出：
+
+| 名称 | 形状 | 说明 |
+|------|------|------|
+| input_ids | (batch_size, sequence_length) | 文本 Token IDs |
+| attention_mask | (batch_size, sequence_length) | 注意力掩码 |
+| social_features | (batch_size, 10) | 社交特征向量 |
+| logits | (batch_size, num_labels) | 情感分类 logits |
+
 ## 目录结构
 
 ```
@@ -120,6 +161,7 @@ deepLeran/
 │   ├── scripts/
 │   │   ├── prepare_data.py        # 数据预处理脚本
 │   │   ├── train.py               # 模型训练脚本
+│   │   ├── export_model_graph.py  # 模型计算图导出
 │   │   ├── test_cleaner.py        # TextCleaner 测试
 │   │   └── test_dataset.py        # Dataset 测试
 │   ├── pyproject.toml             # Python 依赖

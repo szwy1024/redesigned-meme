@@ -55,6 +55,7 @@ class TrainingConfig:
     epochs: int = 10
     learning_rate: float = 2e-5
     weight_decay: float = 0.01
+    warmup_ratio: float = 0.1
     gradient_clip_norm: float = 1.0
     save_dir: str = "checkpoints"
     metric_for_best: str = "f1_weighted"
