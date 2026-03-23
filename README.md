@@ -4,7 +4,7 @@ Social Media Sentiment Analysis System with Deep Learning
 
 [English](README_en.md) | 中文
 
-## 项目简介
+## 1. 项目简介
 
 本项目是一个基于深度学习的社交媒体文本情感分析系统，支持对包含表情符号、话题标签、网络用语等噪声的短文本进行情感分类（正面/负面）。
 
@@ -18,7 +18,7 @@ Social Media Sentiment Analysis System with Deep Learning
 - **RESTful API**：基于 FastAPI 的异步推理服务
 - **现代化前端界面**：Vue 3 + Vite 交互界面
 
-## 系统架构
+## 2. 系统架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -58,7 +58,7 @@ Social Media Sentiment Analysis System with Deep Learning
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 模型架构详解
+## 3. 模型架构详解
 
 ### Text Encoder (通道 A)
 
@@ -97,48 +97,7 @@ Input (10-dim) → Linear(10, 128) → ReLU → LayerNorm(128) → Output (128-d
     → Linear(896, 128) → ReLU → Dropout(0.1) → Linear(128, 2) → logits
 ```
 
-## 模型可视化
-
-### 导出计算图
-
-本项目支持导出神经网络计算图用于可视化分析。
-
-```bash
-cd backend
-
-# 安装依赖（自动安装 netron 和 onnxscript）
-uv sync
-
-# 导出模型计算图到 ONNX 格式
-uv run python scripts/export_model_graph.py
-```
-
-导出后模型文件位于 `backend/model_graph.onnx`（已移动至项目根目录 `model_graph.onnx`）。
-
-### 使用 Netron 可视化
-
-**方式一：在线查看**
-1. 访问 https://netron.app
-2. 点击 "Open Model" 上传 `model_graph.onnx` 文件
-
-**方式二：本地启动 Netron 服务器**
-```bash
-# 在项目根目录运行
-netron model_graph.onnx
-```
-
-### 计算图说明
-
-导出的 ONNX 模型包含以下输入输出：
-
-| 名称 | 形状 | 说明 |
-|------|------|------|
-| input_ids | (batch_size, sequence_length) | 文本 Token IDs |
-| attention_mask | (batch_size, sequence_length) | 注意力掩码 |
-| social_features | (batch_size, 10) | 社交特征向量 |
-| logits | (batch_size, num_labels) | 情感分类 logits |
-
-## 目录结构
+## 4. 目录结构
 
 ```
 deepLeran/
@@ -180,7 +139,7 @@ deepLeran/
 └── README.md
 ```
 
-## 从 GitHub 克隆后的完整配置流程
+## 5. 从 GitHub 克隆后的完整配置流程
 
 ### 1. 克隆项目
 
@@ -280,7 +239,7 @@ npm run dev
 
 前端访问地址：http://localhost:5173
 
-## API 使用
+## 6. API 使用
 
 ### 分析文本情感
 
@@ -322,7 +281,49 @@ curl -X POST http://localhost:8000/api/predict \
 curl http://localhost:8000/api/labels
 ```
 
-## 依赖列表
+## 7. 模型可视化
+
+### 1. 导出计算图
+
+本项目支持导出神经网络计算图用于可视化分析。
+
+```bash
+cd backend
+
+# 安装依赖（自动安装 netron 和 onnxscript）
+uv sync
+
+# 导出模型计算图到 ONNX 格式
+uv run python scripts/export_model_graph.py
+```
+
+导出后模型文件位于 `backend/model_graph.onnx`（已移动至项目根目录 `model_graph.onnx`）。
+
+### 2. 使用 Netron 可视化
+
+**方式一：在线查看**
+1. 访问 https://netron.app
+2. 点击 "Open Model" 上传 `model_graph.onnx` 文件
+
+**方式二：本地启动 Netron 服务器**
+```bash
+# 在项目根目录运行
+netron model_graph.onnx
+```
+
+### 3. 计算图说明
+
+导出的 ONNX 模型包含以下输入输出：
+
+| 名称 | 形状 | 说明 |
+|------|------|------|
+| input_ids | (batch_size, sequence_length) | 文本 Token IDs |
+| attention_mask | (batch_size, sequence_length) | 注意力掩码 |
+| social_features | (batch_size, 10) | 社交特征向量 |
+| logits | (batch_size, num_labels) | 情感分类 logits |
+
+
+## 8. 依赖列表
 
 ### 后端
 
@@ -349,7 +350,7 @@ curl http://localhost:8000/api/labels
 | pinia | ^3.0 | 状态管理 |
 | vue-router | ^4.6 | 路由管理 |
 
-## 开发指南
+## 9. 开发指南
 
 ### 代码规范
 
@@ -369,7 +370,7 @@ cd frontend
 npm run build
 ```
 
-## 常见问题
+## 10. 常见问题
 
 ### Q: 启动时报 `size mismatch` 错误？
 
@@ -390,11 +391,11 @@ A: 确保使用 GPU 加速。macOS M1/M2/M3 会自动使用 MPS，NVIDIA GPU 会
 
 A: 确保 CSV 文件格式为 `label,review`，label 为 0（负面）或 1（正面），然后运行 `prepare_data.py`。
 
-## License
+## 11. License
 
 MIT License
 
-## 致谢
+## 12. 致谢
 
 - 哈工大：[hfl/chinese-roberta-wwm-ext](https://huggingface.co/hfl/chinese-roberta-wwm-ext)
 - HuggingFace Transformers
